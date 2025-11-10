@@ -1,0 +1,100 @@
+require('dotenv').config();
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const path = require('path');
+const http = require('http');
+const { Server } = require('socket.io');
+
+/* ---------------- Import Routes ---------------- */
+const authRoutes = require('./routes/auth');
+const postRoutes = require('./routes/posts');
+const groupRoutes = require('./routes/groups');
+const researchRoutes = require('./routes/research');
+const profileroutes = require('./routes/profiles');
+const searchRoutes = require('./routes/search');
+const notificationRoutes = require("./routes/notifications");
+
+/* ---------------- Express + HTTP setup ---------------- */
+const app = express();
+const server = http.createServer(app); // ✅ needed for Socket.IO
+
+/* ---------------- Core middleware ---------------- */
+app.use(cors({ origin: "*", credentials: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+/* ----------- Static files (uploads) -------------- */
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+/* --------------------- Routes -------------------- */
+app.use('/api/auth', authRoutes);
+app.use('/api/posts', postRoutes);
+app.use('/api/groups', groupRoutes);
+app.use('/api/research', researchRoutes);
+app.use('/api/profile', profileroutes);
+app.use('/api/search', searchRoutes);
+app.use("/api/notifications", notificationRoutes);
+
+/* --------------------- Health check -------------------- */
+app.get('/api/health', (_req, res) => res.json({ ok: true }));
+
+/* --------------- Environment checks -------------- */
+if (!process.env.MONGO_URI) {
+  console.error('Error: MONGO_URI not set in .env');
+  process.exit(1);
+}
+if (!process.env.JWT_SECRET) {
+  console.warn('Warning: JWT_SECRET not set; auth middleware will fail verification if tokens are issued with another secret');
+}
+
+/* --------------- Frontend Config (for API_BASE) --------------- */
+app.get("/config.js", (req, res) => {
+  res.setHeader("Content-Type", "application/javascript");
+  res.send(`window.__CONFIG__ = { API_BASE: "${process.env.API_BASE}" };`);
+});
+
+/* =========================================================
+   SOCKET.IO CONFIGURATION
+========================================================= */
+const io = new Server(server, {
+  cors: { origin: "*", methods: ["GET", "POST"] },
+});
+
+// Global socket map
+io.on("connection", (socket) => {
+  console.log("⚡ User connected:", socket.id);
+
+  // Each user joins their personal room
+  socket.on("register", (userId) => {
+    if (userId) {
+      socket.join(userId);
+      console.log(`📦 User ${userId} joined their personal room`);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log("❌ User disconnected:", socket.id);
+  });
+});
+
+// Export io to use in routes (for sending notifications)
+module.exports.io = io;
+
+/* =========================================================
+   DATABASE CONNECTION + SERVER START
+========================================================= */
+const PORT = process.env.PORT || 4000;
+
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log('✅ MongoDB connected');
+    server.listen(PORT, () =>
+      console.log(`🚀 Server running on port ${PORT}`)
+    );
+  })
+  .catch((err) => {
+    console.error('❌ MongoDB connection error:', err);
+    process.exit(1);
+  });

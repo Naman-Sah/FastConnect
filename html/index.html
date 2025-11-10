@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>FastConnect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    />
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+  </head>
+  <body class="bg-gray-100">
+    <script>
+      // Redirect to auth if not logged in
+      const token = localStorage.getItem("authToken");
+      if (!token) window.location.href = "auth.html";
+    </script>
+
+    <!-- MAIN APP -->
+    <div id="mainApp" class="min-h-screen">
+      <nav class="bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-3">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+          <div class="flex items-center space-x-2 text-white font-bold text-lg">
+            <i class="fas fa-rocket"></i><span>FAST-Connect</span>
+          </div>
+          <ul class="hidden md:flex space-x-6 text-white font-medium">
+            <li
+              onclick="showTab('feed')"
+              class="hover:text-gray-200 cursor-pointer"
+            >
+              <i class="fas fa-stream"></i> Feed
+            </li>
+            <li
+              onclick="showTab('profile')"
+              class="hover:text-gray-200 cursor-pointer"
+            >
+              <i class="fas fa-user"></i> Profile
+            </li>
+            <li
+              onclick="showTab('groups')"
+              class="hover:text-gray-200 cursor-pointer"
+            >
+              <i class="fas fa-users"></i> Groups
+            </li>
+            <li
+              onclick="showTab('research')"
+              class="hover:text-gray-200 cursor-pointer"
+            >
+              <i class="fas fa-flask"></i> Research
+            </li>
+            <li
+              onclick="showTab('search')"
+              class="hover:text-gray-200 cursor-pointer"
+            >
+              <i class="fas fa-search"></i> Search
+            </li>
+          </ul>
+          <div class="flex items-center space-x-4">
+            <div class="relative">
+              <button id="notifBtn" class="relative text-white">
+                <i class="fas fa-bell text-xl cursor-pointer"></i>
+                <span
+                  id="notifBadge"
+                  class="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center hidden"
+                  >0</span
+                >
+              </button>
+            </div>
+
+            <div
+              id="navUser"
+              class="w-8 h-8 flex items-center justify-center rounded-full bg-indigo-300 text-white font-bold cursor-pointer"
+            >
+              U
+            </div>
+            <button
+              id="logoutBtn"
+              onclick="logout()"
+              class="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <!-- FEED -->
+      <section id="feed" class="p-6 max-w-3xl mx-auto">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-2xl font-bold">Community Feed</h2>
+          <button
+            id="createPostBtn"
+            onclick="openPostModal()"
+            class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center space-x-2"
+          >
+            <i class="fas fa-pencil-alt"></i> Create Post
+          </button>
+        </div>
+
+        <div id="filters" class="flex space-x-2 mb-6">
+          <button
+            data-type="All"
+            class="filter-btn px-4 py-1 border rounded-full bg-blue-600 text-white font-medium"
+          >
+            All Posts
+          </button>
+          <button
+            data-type="Discussion"
+            class="filter-btn px-4 py-1 border rounded-full bg-gray-800 text-white font-medium"
+          >
+            Discussions
+          </button>
+          <button
+            data-type="Question"
+            class="filter-btn px-4 py-1 border rounded-full bg-gray-800 text-white font-medium"
+          >
+            Questions
+          </button>
+          <button
+            data-type="Announcement"
+            class="filter-btn px-4 py-1 border rounded-full bg-gray-800 text-white font-medium"
+          >
+            Announcements
+          </button>
+          <button
+            data-type="Project Work"
+            class="filter-btn px-4 py-1 border rounded-full bg-gray-800 text-white font-medium"
+          >
+            Project Work
+          </button>
+        </div>
+
+        <div id="postsContainer"></div>
+      </section>
+
+      <!-- Profile/Groups/Research/Search -->
+      <section id="profile" class="hidden p-6 max-w-4xl mx-auto">
+        <h2 class="text-2xl font-bold">My Profile</h2>
+        <!-- profile.html will be loaded here dynamically -->
+      </section>
+
+      <section id="groups" class="hidden p-6 max-w-5xl mx-auto">
+        <div id="groupContent" class="text-center text-gray-500">
+          Loading groups...
+        </div>
+      </section>
+
+      <section id="research" class="hidden p-6 max-w-5xl mx-auto">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-2xl font-bold">Research Hub</h2>
+          <button
+            id="addResearchBtn"
+            onclick="openResearchModal()"
+            class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center space-x-2"
+          >
+            <i class="fas fa-plus"></i> Add Research
+          </button>
+        </div>
+
+        <div id="researchContainer" class="space-y-4">
+          <!-- Research posts will be dynamically loaded here -->
+        </div>
+      </section>
+
+      <section id="search" class="hidden p-6 max-w-4xl mx-auto">
+        <h2 class="text-2xl font-bold mb-6">Search & Discover</h2>
+
+        <!-- Search Input and Button -->
+        <div class="flex items-center space-x-2 mb-6">
+          <input
+            id="navSearchInput"
+            type="text"
+            placeholder="Search posts..."
+            class="flex-1 rounded px-3 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          <button
+            id="navSearchBtn"
+            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm transition"
+          >
+            Search
+          </button>
+        </div>
+
+        <!-- Search Results -->
+        <div class="bg-white shadow rounded-lg p-4">
+          <h3 class="font-bold mb-3 text-lg">Results</h3>
+          <ul id="searchResults" class="space-y-3 text-gray-700"></ul>
+        </div>
+      </section>
+    </div>
+
+    <!-- Post Modal -->
+    <div
+      id="postModal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div class="bg-white rounded-2xl w-96 p-6 relative shadow-lg">
+        <h2 class="text-xl font-bold text-center mb-4">Create a Post</h2>
+        <form id="postForm" class="space-y-4">
+          <div>
+            <label class="block text-gray-700 font-medium mb-1"
+              >Post Type</label
+            >
+            <select
+              id="postType"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
+              <option value="Event">Event</option>
+              <option value="Question">Question</option>
+              <option value="Discussion">Discussion</option>
+              <option value="Announcement">Announcement</option>
+              <option value="Project Work">Project Work</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-gray-700 font-medium mb-1">Title</label>
+            <input
+              id="postTitle"
+              type="text"
+              placeholder="Post Title"
+              class="w-full px-4 py-2 border rounded-lg"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-gray-700 font-medium mb-1">Content</label>
+            <textarea
+              id="postContent"
+              placeholder="Write your content..."
+              class="w-full px-4 py-2 border rounded-lg"
+              required
+            ></textarea>
+          </div>
+          <div>
+            <label class="block text-gray-700 font-medium mb-1"
+              >Tags (comma separated)</label
+            >
+            <input
+              id="postTags"
+              type="text"
+              placeholder="e.g. AI, Education"
+              class="w-full px-4 py-2 border rounded-lg"
+            />
+          </div>
+          <div>
+            <label class="block text-gray-700 font-medium mb-1"
+              >Image URL</label
+            >
+            <input
+              id="postImage"
+              type="text"
+              placeholder="Enter image URL"
+              class="w-full px-4 py-2 border rounded-lg"
+            />
+          </div>
+          <div>
+            <label class="block text-gray-700 font-medium mb-1"
+              >Or upload from device</label
+            >
+            <input
+              id="postImageFile"
+              type="file"
+              accept="image/*"
+              class="w-full px-4 py-2 border rounded-lg"
+            />
+            <p class="text-xs text-gray-500 mt-1">
+              If a file is selected, the Image URL field is ignored.
+            </p>
+          </div>
+
+          <div class="flex justify-between">
+            <button
+              type="button"
+              onclick="closePostModal()"
+              class="px-4 py-2 bg-gray-300 rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg"
+            >
+              Post
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- Share Modal -->
+    <div
+      id="shareModal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div class="bg-white rounded-2xl w-80 p-6 relative shadow-lg text-center">
+        <h2 class="text-xl font-bold mb-4">Share Post</h2>
+        <p class="text-gray-600 text-sm mb-4">
+          Choose a platform to share this post:
+        </p>
+
+        <div class="flex justify-around text-3xl mb-4">
+          <i
+            onclick="shareToPlatform('whatsapp')"
+            class="fab fa-whatsapp text-green-500 cursor-pointer hover:scale-110 transition-transform"
+          ></i>
+          <i
+            onclick="shareToPlatform('linkedin')"
+            class="fab fa-linkedin text-blue-700 cursor-pointer hover:scale-110 transition-transform"
+          ></i>
+          <i
+            onclick="shareToPlatform('facebook')"
+            class="fab fa-facebook text-blue-600 cursor-pointer hover:scale-110 transition-transform"
+          ></i>
+          <i
+            onclick="shareToPlatform('instagram')"
+            class="fab fa-instagram text-pink-500 cursor-pointer hover:scale-110 transition-transform"
+          ></i>
+          <i
+            onclick="copyShareLink()"
+            class="fa fa-link text-gray-700 cursor-pointer hover:scale-110 transition-transform"
+            title="Copy link"
+          ></i>
+        </div>
+
+        <button
+          onclick="closeShareModal()"
+          class="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+
+
+    <!-- 🔔 Notification Drawer -->
+<div
+  id="notifDrawer"
+  class="hidden fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-50 transition-transform duration-300 transform translate-x-full"
+>
+  <div class="flex items-center justify-between p-4 border-b">
+    <h2 class="text-lg font-semibold">Notifications</h2>
+    <button id="closeNotifBtn" class="text-gray-500 hover:text-gray-800">
+      <i class="fa-solid fa-xmark text-xl"></i>
+    </button>
+  </div>
+
+  <div id="notifList" class="overflow-y-auto h-[calc(100%-60px)] p-4 space-y-3">
+    <!-- Notifications will load here -->
+  </div>
+</div>
+
+    <!-- ✅ Load backend config first -->
+    <script src="http://localhost:4000/config.js"></script>
+
+    <!-- ✅ Define API_BASE globally (not const) -->
+    <script>
+      window.API_BASE =
+        window.__CONFIG__?.API_BASE || "http://localhost:4000/api";
+      console.log("✅ API_BASE loaded:", window.API_BASE);
+    </script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const name = localStorage.getItem("userName") || "User";
+        // Split into parts (handle single names too)
+        const parts = name.trim().split(" ");
+        let initials = "";
+        if (parts.length >= 2) {
+          initials = parts[0][0] + parts[1][0];
+          // first + last initial
+        } else {
+          initials = parts[0][0]; // only first name
+        } // Uppercase + apply to the div
+        const navUser = document.getElementById("navUser");
+        if (navUser) navUser.textContent = initials.toUpperCase();
+      });
+    </script>
+    <script src="../js/feed.js"></script>
+    <script src="../js/groups.js"></script>
+    <script src="../js/profile.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/research.js"></script>
+    <script src="../js/search.js"></script>
+    <script src="../js/notification.js"></script>
+  </body>
+</html>

@@ -1,0 +1,42 @@
+<div class="flex items-center justify-between mb-4">
+  <h2 class="text-2xl font-bold">Research Hub</h2>
+  <button id="addResearchBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center space-x-2">
+    <i class="fas fa-plus"></i> Add Research
+  </button>
+</div>
+
+<div id="researchContainer">Loading research...</div>
+
+<!-- Research Form Modal -->
+<div id="researchModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-2xl w-96 p-6 relative shadow-lg">
+    <h2 class="text-xl font-bold text-center mb-4">Add Research</h2>
+    <form id="researchForm" class="space-y-4">
+      <div>
+        <label>Title</label>
+        <input id="researchTitle" type="text" class="w-full border rounded-lg p-2" required>
+      </div>
+      <div>
+        <label>Abstract</label>
+        <textarea id="researchAbstract" class="w-full border rounded-lg p-2" required></textarea>
+      </div>
+      <div>
+        <label>Content</label>
+        <textarea id="researchContent" class="w-full border rounded-lg p-2" required></textarea>
+      </div>
+      <div>
+        <label>Keywords (comma separated)</label>
+        <input id="researchKeywords" type="text" class="w-full border rounded-lg p-2">
+      </div>
+      <div>
+        <label>
+          <input id="researchOriginal" type="checkbox"> I confirm this is my original work
+        </label>
+      </div>
+      <div class="flex justify-end space-x-2">
+        <button type="button" id="cancelResearchBtn" class="px-4 py-2 bg-gray-300 rounded-lg">Cancel</button>
+        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>
