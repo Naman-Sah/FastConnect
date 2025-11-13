@@ -16,7 +16,7 @@ async function loadGroups() {
 
 // ---------- REPLACE initGroupPage() and helpers with this ----------
 function initGroupPage() {
-  const API_BASE = "https://fastconnect-rl5y.onrender.com/api";
+  const API_BASE = "http://localhost:4000/api";
   const rawCurrentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
   // Normalize user id (backend might return `id` or `_id`)
   const currentUserId = String(rawCurrentUser.id || rawCurrentUser._id || "");

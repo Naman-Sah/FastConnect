@@ -64,13 +64,10 @@ app.get("/config.js", (req, res) => {
   res.setHeader("Content-Type", "application/javascript");
   res.send(`window.__CONFIG__ = { API_BASE: "${process.env.API_BASE}" };`);
 });
-
+/* ---------------- Socket.IO setup ---------------- */
 const io = new Server(server, {
   cors: {
-    origin: [
-      "https://fast-connect-mu.vercel.app", // replace with actual domain
-      "http://localhost:3000"
-    ],
+    origin: "*",
     methods: ["GET", "POST"],
     credentials: true
   }
