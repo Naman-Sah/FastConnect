@@ -1,0 +1,22 @@
+# Node.js dependencies
+node_modules/
+server/node_modules/
+
+# Environment variables file
+# IMPORTANT: Add this to protect your database passwords and API keys
+.env
+server/.env
+
+# Log files
+*.log
+npm-debug.log*
+
+# Operating System generated files
+.DS_Store
+Thumbs.db
+
+#Text file
+*.txt
+
+#upload folder
+uploads/

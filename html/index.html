@@ -10,7 +10,6 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
     />
-
   </head>
   <body class="bg-gray-100">
     <script>
@@ -333,31 +332,34 @@
       </div>
     </div>
 
-
     <!-- 🔔 Notification Drawer -->
-<div
-  id="notifDrawer"
-  class="hidden fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-50 transition-transform duration-300 transform translate-x-full"
->
-  <div class="flex items-center justify-between p-4 border-b">
-    <h2 class="text-lg font-semibold">Notifications</h2>
-    <button id="closeNotifBtn" class="text-gray-500 hover:text-gray-800">
-      <i class="fa-solid fa-xmark text-xl"></i>
-    </button>
-  </div>
+    <div
+      id="notifDrawer"
+      class="hidden fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-50 transition-transform duration-300 transform translate-x-full"
+    >
+      <div class="flex items-center justify-between p-4 border-b">
+        <h2 class="text-lg font-semibold">Notifications</h2>
+        <button id="closeNotifBtn" class="text-gray-500 hover:text-gray-800">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
 
-  <div id="notifList" class="overflow-y-auto h-[calc(100%-60px)] p-4 space-y-3">
-    <!-- Notifications will load here -->
-  </div>
-</div>
+      <div
+        id="notifList"
+        class="overflow-y-auto h-[calc(100%-60px)] p-4 space-y-3"
+      >
+        <!-- Notifications will load here -->
+      </div>
+    </div>
+    <script src="/config.js"></script>
 
-
-    <!-- ✅ Define API_BASE globally (not const) -->
 <script>
-  window.API_BASE = "http://localhost:4000/api";
+  // Fallback if config.js not loaded for some reason
+  window.API_BASE =
+    (window.__CONFIG__ && window.__CONFIG__.API_BASE) ||
+    (location.origin + "/api");
   console.log("✅ API_BASE loaded:", window.API_BASE);
 </script>
-
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         const name = localStorage.getItem("userName") || "User";
@@ -374,17 +376,14 @@
         if (navUser) navUser.textContent = initials.toUpperCase();
       });
     </script>
-<script src="https://fastconnect-rl5y.onrender.com/socket.io/socket.io.js"></script>
-<script>
-  const socket = io("https://fastconnect-rl5y.onrender.com");
-</script>
 
-  <script src="js/feed.js"></script>
-<script src="js/groups.js"></script>
-<script src="js/profile.js"></script>
-<script src="js/main.js"></script>
-<script src="js/research.js"></script>
-<script src="js/search.js"></script>
-<script src="js/notification.js"></script>
+
+    <script src="js/feed.js"></script>
+    <script src="js/groups.js"></script>
+    <script src="js/profile.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/research.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/notification.js"></script>
   </body>
 </html>

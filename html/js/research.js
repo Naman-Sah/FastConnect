@@ -1,3 +1,6 @@
+// — dynamic API base that gets set by the server via /config.js — fallback to relative path
+const API_BASE = (window.__CONFIG__ && window.__CONFIG__.API_BASE) || (location.origin + '/api') || '/api';
+
 /* ---------------- RESEARCH TAB ---------------- */
 async function loadResearchPage() {
   const researchSection = document.getElementById("research");

@@ -1,5 +1,6 @@
 // API base (adjust if your backend runs elsewhere)
-const API_BASE = "http://localhost:4000/api";
+// — dynamic API base that gets set by the server via /config.js — fallback to relative path
+const API_BASE = (window.__CONFIG__ && window.__CONFIG__.API_BASE) || (location.origin + '/api') || '/api';
 
 // container and links for toggling UI
 const container = document.querySelector(".container");

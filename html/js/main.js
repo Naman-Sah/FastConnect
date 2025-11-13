@@ -1,3 +1,5 @@
+// — dynamic API base that gets set by the server via /config.js — fallback to relative path
+const API_BASE = (window.__CONFIG__ && window.__CONFIG__.API_BASE) || (location.origin + '/api') || '/api';
 
 const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
 document.getElementById("navUser").textContent = (currentUser.username || "U")
@@ -67,7 +69,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-  const socket = io("https://fastconnect-rl5y.onrender.com");
+// Connect socket.io to same origin. If you hosted API_BASE as a full URL like https://<app>.onrender.com/api,
+// strip the /api to get base origin. Fallback to automatic same origin.
+const socketOrigin = (window.__CONFIG__ && window.__CONFIG__.API_BASE)
+  ? window.__CONFIG__.API_BASE.replace(/\/api\/?$/, '')
+  : '';
+const socket = socketOrigin ? io(socketOrigin) : io(); // io() => same origin
   socket.on("connect", () => {
     const currentUser = JSON.parse(localStorage.getItem("currentUser")||"{}");
     socket.emit("register", currentUser?.id);

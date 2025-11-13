@@ -92,14 +92,21 @@ io.on("connection", (socket) => {
    DATABASE CONNECTION + SERVER START
 ========================================================= */
 const PORT = process.env.PORT || 4000;
+const ENV = process.env.NODE_ENV || "development";
 
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log('✅ MongoDB connected');
-    server.listen(PORT, () =>
-      console.log(`🚀 Server running on port ${PORT}`)
-    );
+
+    server.listen(PORT, () => {
+      console.log(
+        `🚀 Server running in ${ENV} mode on port ${PORT} (${ENV === "production"
+          ? "https://" + process.env.RENDER_EXTERNAL_URL
+          : "http://localhost:" + PORT
+        })`
+      );
+    });
   })
   .catch((err) => {
     console.error('❌ MongoDB connection error:', err);
