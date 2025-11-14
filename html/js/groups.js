@@ -195,7 +195,7 @@ async function joinGroup(groupId) {
   const token = getAuthToken();
   if (!token) return alert("Please login first");
   try {
-    const res = await fetch(`https://fastconnect-rl5y.onrender.com/api/groups/${groupId}/join`, {
+const res = await fetch(`${API_BASE}/groups/${groupId}/join`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -221,7 +221,7 @@ async function leaveGroup(groupId) {
   const token = getAuthToken();
   if (!token) return alert("Please login first");
   try {
-    const res = await fetch(`https://fastconnect-rl5y.onrender.com/api/groups/${groupId}/leave`, {
+const res = await fetch(`${API_BASE}/groups/${groupId}/leave`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -259,7 +259,7 @@ async function editGroup(groupId) {
   };
 
   try {
-    const res = await fetch(`https://fastconnect-rl5y.onrender.com/api/groups/${groupId}`, {
+const res = await fetch(`${API_BASE}/groups/${groupId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -289,7 +289,7 @@ async function deleteGroup(groupId) {
   if (!token) return alert("Please login first");
   if (!confirm("Are you sure you want to delete this group?")) return;
   try {
-    const res = await fetch(`https://fastconnect-rl5y.onrender.com/api/groups/${groupId}`, {
+   const res = await fetch(`${API_BASE}/groups/${groupId}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
