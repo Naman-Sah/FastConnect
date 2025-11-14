@@ -1,10 +1,11 @@
+/********************* ENV CHECKS *********************/
 require('dotenv').config();
 if (!process.env.MONGO_URI) throw new Error('MONGO_URI not set');
 if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET not set');
-if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS)
   console.warn('EMAIL_* not set; OTP email may fail');
-}
 
+/********************* IMPORTS *********************/
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -12,10 +13,11 @@ const path = require('path');
 const http = require('http');
 const { Server } = require("socket.io");
 
+/********************* APP + SERVER *********************/
 const app = express();
 const server = http.createServer(app);
 
-/* --------------------- CORS --------------------- */
+/********************* CORS *********************/
 const FRONTEND_URL =
   process.env.FRONTEND_URL ||
   (process.env.RENDER_EXTERNAL_URL ? `https://${process.env.RENDER_EXTERNAL_URL}` : null);
@@ -29,11 +31,11 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-/* ------------------ Static Files ------------------ */
+/********************* STATIC FILES *********************/
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(path.join(__dirname, 'html')));
 
-/* ------------------ Dynamic Config ------------------ */
+/********************* DYNAMIC FRONTEND CONFIG *********************/
 app.get('/config.js', (req, res) => {
   const apiBase =
     process.env.API_BASE ||
@@ -44,24 +46,24 @@ app.get('/config.js', (req, res) => {
     FRONTEND_URL: FRONTEND_URL || ""
   };
 
-  res.set('Content-Type', 'application/javascript');
+  res.type('application/javascript');
   res.send(`window.__CONFIG__ = ${JSON.stringify(cfg)};`);
 });
 
-/* --------------------- Routes ---------------------- */
+/********************* API ROUTES *********************/
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/posts', require('./routes/posts'));
 app.use('/api/groups', require('./routes/groups'));
 app.use('/api/research', require('./routes/research'));
 app.use('/api/profile', require('./routes/profiles'));
 app.use('/api/search', require('./routes/search'));
-app.use("/api/notifications", require("./routes/notifications"));
+app.use('/api/notifications', require('./routes/notifications'));
 
-app.get('/', (req, res) => {
-  res.send('✅ FastConnect backend is running');
-});
+/********************* HEALTH CHECK *********************/
+app.get('/health', (req, res) => res.send('OK'));
+app.get('/', (req, res) => res.send('✅ FastConnect backend is running'));
 
-/* ------------------ Socket.IO --------------------- */
+/********************* SOCKET.IO *********************/
 const io = new Server(server, {
   cors: {
     origin: FRONTEND_URL || "*",
@@ -84,15 +86,20 @@ io.on("connection", (socket) => {
   });
 });
 
-/* ------------------ SPA Fallback ------------------ */
-app.get("/*", (req, res) => {
-  if (req.path.startsWith('/api') || req.path.startsWith('/uploads') || req.path === '/config.js') {
+/********************* SPA FALLBACK (Express 5 SAFE) *********************/
+app.get("*", (req, res) => {
+  if (
+    req.path.startsWith('/api') ||
+    req.path.startsWith('/uploads') ||
+    req.path === '/config.js'
+  ) {
     return res.status(404).json({ error: 'Not found' });
   }
+
   res.sendFile(path.join(__dirname, 'html', 'index.html'));
 });
 
-/* ------------------ DB + Server ------------------- */
+/********************* DB + SERVER START *********************/
 const PORT = process.env.PORT || 4000;
 
 mongoose
