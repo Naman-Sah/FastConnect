@@ -355,9 +355,8 @@
 
 <script>
   // Fallback if config.js not loaded for some reason
-  window.API_BASE =
-    (window.__CONFIG__ && window.__CONFIG__.API_BASE) ||
-    (location.origin + "/api");
+window.API_BASE = window.location.origin + "/api";
+
   console.log("✅ API_BASE loaded:", window.API_BASE);
 </script>
     <script>
